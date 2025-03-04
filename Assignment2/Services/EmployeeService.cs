@@ -25,6 +25,7 @@ namespace Assignment2.Services
             Employee employee = new Employee();
             try
             {
+                if (await _employeeRepository.IsEmployeeExistAsync(employeeDto.EmployeeId)) return false;
                 var department = await _departmentRepository.GetDepartmentByIdAsync(departmentId);
                 if (department.DepartmentName == null) return false;
                 employee = new Employee()
@@ -114,6 +115,9 @@ namespace Assignment2.Services
             Employee employee = new Employee();
             try
             {
+                var empValidationWithDepartment = await _employeeRepository.GetEmployeeByIdAsync(departmentId, employeeDto.EmployeeId);
+                if (empValidationWithDepartment == null || empValidationWithDepartment.EmployeeId == null) return false;
+
                 var departmentByPathParam = await _departmentRepository.GetDepartmentByIdAsync(departmentId);
                 if (departmentByPathParam == null || departmentByPathParam.DepartmentId == null) return false;
                 
