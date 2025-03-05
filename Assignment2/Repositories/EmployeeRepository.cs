@@ -51,7 +51,7 @@ namespace Assignment2.Repositories
 
         public async Task<bool> IsEmployeeExistAsync(string employeeId)
         {
-            return await _context.Employees.AnyAsync(e => e.EmployeeName.Equals(employeeId));
+            return await _context.Employees.AnyAsync(e => e.EmployeeId.Equals(employeeId));
         }
 
         public async Task<bool> UpdateEmployeeAsync(Employee employee)

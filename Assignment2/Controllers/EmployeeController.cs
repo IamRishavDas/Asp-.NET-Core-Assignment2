@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Assignment2.Controllers
 {
-    [Route("api/departments/{departmentId}")]
+    [Route("api/departments/{departmentId}/employees")]
     [ApiController]
     public class EmployeeController : ControllerBase
     {
@@ -16,7 +16,7 @@ namespace Assignment2.Controllers
             _employeeService = employeeService;
         }
 
-        [HttpGet("employees")]
+        [HttpGet]
         public async Task<ActionResult<ICollection<EmployeeDto>>> GetEmployeesByDepartment([FromRoute] string departmentId)
         {
             var employeesByDepartmentId = await _employeeService.GetEmployeesByDepartmentIdAsync(departmentId);
@@ -24,28 +24,28 @@ namespace Assignment2.Controllers
             return employeesByDepartmentId.Count() > 0 ? Ok(employeesByDepartmentId) : NotFound();
         }
 
-        [HttpGet("employees/{employeeId}")]
+        [HttpGet("{employeeId}")]
         public async Task<ActionResult<EmployeeDto>> GetEmployeeByIdAsync([FromRoute] string departmentId, [FromRoute] string employeeId)
         {
             var employeeById = await _employeeService.GetEmployeeByIdAsync(departmentId, employeeId);
             return (employeeById == null || employeeById.EmployeeId == null) ? NotFound() : Ok(employeeById);
         }
 
-        [HttpPatch("employees/{employeeId}")]
+        [HttpPatch("{employeeId}")]
         public async Task<ActionResult<EmployeeDto>> UpdateEmployeeByIdAsync([FromRoute] string departmentId, [FromRoute] string employeeId, [FromBody] EmployeeDto employeeDto)
         {
             var isEmployeeUpdated = await _employeeService.UpdateEmployeeAsync(departmentId, employeeId, employeeDto);
             return isEmployeeUpdated ? Ok(employeeDto) : NotFound();
         }
 
-        [HttpPost("employees")]
+        [HttpPost]
         public async Task<ActionResult<EmployeeDto>> CreateNewEmployeeAsync([FromRoute] string departmentId, [FromBody] EmployeeDto employeeDto)
         {
             var isEmployeeCreated = await _employeeService.CreateEmployeeAsync(departmentId, employeeDto);
             return isEmployeeCreated ? Ok(employeeDto) : Conflict();
         }
 
-        [HttpDelete("employees/{employeeId}")]
+        [HttpDelete("{employeeId}")]
         public async Task<IActionResult> DeleteEmployeeByIdAsync([FromRoute] string departmentId, [FromRoute] string employeeId)
         {
             var isEmployeeDeleted = await _employeeService.DeleteEmployeeByIdAsync(departmentId, employeeId);

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Assignment2.Controllers
 {
-    [Route("api")]
+    [Route("api/departments")]
     [ApiController]
     public class DepartmentController : ControllerBase
     {
@@ -15,7 +15,7 @@ namespace Assignment2.Controllers
             _departmentService = departmentService;
         }
 
-        [HttpGet("departments")]
+        [HttpGet]
         public async Task<ActionResult<ICollection<DepartmentDto>>> GetAllDepartmentsAsync()
         {
             var departments = await _departmentService.GetDepartmentsAsync();
@@ -23,7 +23,7 @@ namespace Assignment2.Controllers
             return departments?.Count() > 0 ? Ok(departments) : NotFound();
         }
 
-        [HttpGet("departments/{departmentId}")]
+        [HttpGet("{departmentId}")]
         public async Task<ActionResult<DepartmentDto>> GetDepartmentByIdAsync([FromRoute] string departmentId)
         {
             var department = await _departmentService.GetDepartmentByIdAsync(departmentId);
@@ -31,21 +31,21 @@ namespace Assignment2.Controllers
             return Ok(department);
         }
 
-        [HttpPost("departments")]
+        [HttpPost]
         public async Task<ActionResult<DepartmentDto>> CreateDepartmentAsync([FromBody] DepartmentDto departmentDto)
         {
             var isDepartmentCreated = await _departmentService.CreateDepartmentAsync(departmentDto);
             return isDepartmentCreated ? Ok(departmentDto) : Conflict();
         }
 
-        [HttpPatch("departments/{departmentId}")]
+        [HttpPatch("{departmentId}")]
         public async Task<ActionResult<DepartmentDto>> UpdateDepartmentAsync([FromRoute] string departmentId, [FromBody] DepartmentDto departmentDto)
         {
             var isDepartmentUpdated = await _departmentService.UpdateDepartmentAsync(departmentId, departmentDto);
             return isDepartmentUpdated ? Ok(departmentDto) : NotFound();
         }
 
-        [HttpDelete("departments/{departmentId}")]
+        [HttpDelete("{departmentId}")]
         public async Task<IActionResult> DeleteDepartmentById([FromRoute] string departmentId)
         {
             var isDepartmentDeleted = await _departmentService.DeleteDepartmentByIdAsync(departmentId);

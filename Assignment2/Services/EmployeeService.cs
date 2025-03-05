@@ -27,6 +27,7 @@ namespace Assignment2.Services
             try
             {
                 if (departmentId == null || employeeDto == null) throw new ArgumentNullException("DepartmentId or EmployeeDto is null!");
+
                 if (!departmentId.Equals(employeeDto.DepartmentId)) return false;
                 if (await _employeeRepository.IsEmployeeExistAsync(employeeDto.EmployeeId)) return false;
                 var department = await _departmentRepository.GetDepartmentByIdAsync(departmentId);
