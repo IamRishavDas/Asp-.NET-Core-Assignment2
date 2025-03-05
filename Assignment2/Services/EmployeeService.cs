@@ -4,6 +4,7 @@ using Assignment2.Repositories;
 using Assignment2.CustomExceptions;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Assignment2.CustomResponses;
 
 namespace Assignment2.Services
 {
@@ -20,7 +21,7 @@ namespace Assignment2.Services
             _mapper = mapper;
         }
 
-        public async Task<bool> CreateEmployeeAsync(string departmentId, EmployeeDto employeeDto)
+        public async Task<ServiceResponse<bool>> CreateEmployeeAsync(string departmentId, EmployeeDto employeeDto)
         {
             Employee employee = new Employee();
 
@@ -28,10 +29,11 @@ namespace Assignment2.Services
             {
                 if (departmentId == null || employeeDto == null) throw new ArgumentNullException("DepartmentId or EmployeeDto is null!");
 
-                if (!departmentId.Equals(employeeDto.DepartmentId)) return false;
-                if (await _employeeRepository.IsEmployeeExistAsync(employeeDto.EmployeeId)) return false;
+                if (!departmentId.Equals(employeeDto.DepartmentId)) return ServiceResponse<bool>.Failure($"Path: {departmentId} not match EmployeeDto.DepartmentId: {employeeDto.DepartmentId}");
+                if (await _employeeRepository.IsEmployeeExistAsync(employeeDto.EmployeeId)) return ServiceResponse<bool>.Failure($"EmployeeId: {employeeDto.EmployeeId} already exist");
                 var department = await _departmentRepository.GetDepartmentByIdAsync(departmentId);
-                if (department.DepartmentName == null) return false;
+                if (department == null || department.DepartmentId == null || department.DepartmentName == null) return ServiceResponse<bool>.Failure($"DepartmentId: {departmentId} not exist");
+                
                 employee = new Employee()
                 {
                     EmployeeId = employeeDto.EmployeeId,
@@ -41,7 +43,9 @@ namespace Assignment2.Services
                     DepartmentId = departmentId,
                     Department = department
                 };
-                return await _employeeRepository.CreateEmployeeAsync(employee);
+                var isCreateOperationSuccedd = await _employeeRepository.CreateEmployeeAsync(employee);
+                var response = isCreateOperationSuccedd ? ServiceResponse<bool>.Success(true) : ServiceResponse<bool>.Failure($"Error while creating Employee: {_mapper.Map<EmployeeDto>(employee)}");
+                return response;
             }
             catch (ArgumentNullException ex)
             {
@@ -65,14 +69,22 @@ namespace Assignment2.Services
             }
         }
 
-        public async Task<bool> DeleteEmployeeByIdAsync(string departmentId, string employeeId)
+        public async Task<ServiceResponse<bool>> DeleteEmployeeByIdAsync(string departmentId, string employeeId)
         {
             try
             {
                 if (departmentId == null || employeeId == null) throw new ArgumentNullException("DepartmentId or EmployeeId is null!");
+
                 var deprartment = await _departmentRepository.GetDepartmentByIdAsync(departmentId);
-                if (deprartment == null || deprartment.DepartmentId == null) return false;
-                return await _employeeRepository.DeleteEmployeeByIdAsync(departmentId, employeeId);
+                if (deprartment == null || deprartment.DepartmentId == null) return ServiceResponse<bool>.Failure($"DepartmentId: {departmentId} not exist");
+
+                var isEmployeeExist = await _employeeRepository.IsEmployeeExistAsync(employeeId);
+                if (!isEmployeeExist) return ServiceResponse<bool>.Failure($"EmployeeId: {employeeId} not exist");
+                
+                
+                var isDeleteEmployeeSucceed = await _employeeRepository.DeleteEmployeeByIdAsync(departmentId, employeeId);
+                var response = isDeleteEmployeeSucceed ? ServiceResponse<bool>.Success(true) : ServiceResponse<bool>.Failure($"Error while deleting EmployeeId: {employeeId}");
+                return response;
             }
             catch (ArgumentNullException ex)
             {
@@ -96,12 +108,19 @@ namespace Assignment2.Services
             }
         }
 
-        public async Task<EmployeeDto> GetEmployeeByIdAsync(string departmentId, string employeeId)
+        public async Task<ServiceResponse<EmployeeDto>> GetEmployeeByIdAsync(string departmentId, string employeeId)
         {
             try
             {
                 if (departmentId == null || employeeId == null) throw new ArgumentNullException("DepartmentId or EmployeeId is null!");
-                return _mapper.Map<EmployeeDto>(await _employeeRepository.GetEmployeeByIdAsync(departmentId, employeeId));
+
+                var isDepartmentExist = await _departmentRepository.IsDepartmentExistAsync(departmentId);
+                if(!isDepartmentExist) return ServiceResponse<EmployeeDto>.Failure($"DepartmentId: {departmentId} not exist");
+
+                var employeeDto =  _mapper.Map<EmployeeDto>(await _employeeRepository.GetEmployeeByIdAsync(departmentId, employeeId));
+                if (employeeDto == null || employeeDto.EmployeeId == null) return ServiceResponse<EmployeeDto>.Failure($"EmployeeId: {employeeId} not exist");
+
+                return ServiceResponse<EmployeeDto>.Success(employeeDto);
             }
             catch (ArgumentNullException ex)
             {
@@ -125,11 +144,14 @@ namespace Assignment2.Services
             }
         }
 
-        public async Task<ICollection<EmployeeDto>> GetEmployeesAsync()
+        public async Task<ServiceResponse<ICollection<EmployeeDto>>> GetEmployeesAsync()
         {
             try
             {
-                return _mapper.Map<ICollection<EmployeeDto>>(await _employeeRepository.GetEmployeesAsync());
+                var employeeList =  _mapper.Map<ICollection<EmployeeDto>>(await _employeeRepository.GetEmployeesAsync());
+                if (employeeList == null || employeeList.Count() == 0) return ServiceResponse<ICollection<EmployeeDto>>.Failure($"No employees found");
+
+                return ServiceResponse<ICollection<EmployeeDto>>.Success(employeeList);
             }
             catch (OperationCanceledException ex)
             {
@@ -149,13 +171,18 @@ namespace Assignment2.Services
             }
         }
 
-        public async Task<ICollection<EmployeeDto>> GetEmployeesByDepartmentIdAsync(string departmentId)
+        public async Task<ServiceResponse<ICollection<EmployeeDto>>> GetEmployeesByDepartmentIdAsync(string departmentId)
         {
             try
             {
                 if (departmentId == null) throw new ArgumentNullException("DepartmentId is null!");
+
+                var isDepartmentExist = await _departmentRepository.IsDepartmentExistAsync(departmentId);
+                if (!isDepartmentExist) return ServiceResponse<ICollection<EmployeeDto>>.Failure($"DepartmentId: {departmentId} not exist");
+
                 var employeesByDepartmentId = await _employeeRepository.GetEmployeesByDepartmentIdAsync(departmentId);
-                return _mapper.Map<ICollection<EmployeeDto>>(employeesByDepartmentId);
+                if (employeesByDepartmentId == null || employeesByDepartmentId.Count() == 0) return ServiceResponse<ICollection<EmployeeDto>>.Failure($"DepartmentId: {departmentId} contains no employee");
+                return ServiceResponse<ICollection<EmployeeDto>>.Success(_mapper.Map<ICollection<EmployeeDto>>(employeesByDepartmentId));
             }
             catch (ArgumentNullException ex)
             {
@@ -179,12 +206,15 @@ namespace Assignment2.Services
             }
         }
 
-        public async Task<bool> IsEmployeeExistAsync(string employeeId)
+        public async Task<ServiceResponse<bool>> IsEmployeeExistAsync(string employeeId)
         {
             try
             {
                 if (employeeId == null) throw new ArgumentNullException("EmployeeId is null!");
-                return await _employeeRepository.IsEmployeeExistAsync(employeeId);
+                var isEmployeeExist =  await _employeeRepository.IsEmployeeExistAsync(employeeId);
+
+                if (!isEmployeeExist) return ServiceResponse<bool>.Failure($"EmployeeId: {employeeId} not found");
+                return ServiceResponse<bool>.Success(true);
             }
             catch (ArgumentNullException ex)
             {
@@ -208,23 +238,25 @@ namespace Assignment2.Services
             }
         }
 
-        public async Task<bool> UpdateEmployeeAsync(string departmentId, string employeeId, EmployeeDto employeeDto)
+        public async Task<ServiceResponse<bool>> UpdateEmployeeAsync(string departmentId, string employeeId, EmployeeDto employeeDto)
         {
             Employee employee = new Employee();
 
             try
             {
                 if (departmentId == null || employeeId == null || employeeDto == null) throw new ArgumentNullException("DepartmentId or EmployeeId or EmployeeDto is null!");
-                if (!employeeId.Equals(employeeDto.EmployeeId)) return false;
+                if (!employeeId.Equals(employeeDto.EmployeeId)) return ServiceResponse<bool>.Failure($"Path EmployeeId: {employeeId} and Request object: {employeeDto.EmployeeId} not match");
+
+                if (!(await IsEmployeeExistAsync(employeeId)).IsSuccess) return ServiceResponse<bool>.Failure($"EmployeeId: {employeeId} not exist");
 
                 var departmentByPathParam = await _departmentRepository.GetDepartmentByIdAsync(departmentId);
-                if (departmentByPathParam == null || departmentByPathParam.DepartmentId == null) return false;
+                if (departmentByPathParam == null || departmentByPathParam.DepartmentId == null) return ServiceResponse<bool>.Failure($"DepartmentId: {departmentId} not exist");
 
                 var empValidationWithDepartment = await _employeeRepository.GetEmployeeByIdAsync(departmentId, employeeDto.EmployeeId);
-                if (empValidationWithDepartment == null || empValidationWithDepartment.EmployeeId == null) return false;
-                
+                if (empValidationWithDepartment == null || empValidationWithDepartment.EmployeeId == null) return ServiceResponse<bool>.Failure($"EmployeeId: {employeeId} not exist in DepartmentId: {departmentId}");
+
                 var departmentByEmployeeDto = await _departmentRepository.GetDepartmentByIdAsync(employeeDto.DepartmentId);
-                if (departmentByEmployeeDto == null || departmentByEmployeeDto.DepartmentId == null) return false;
+                if (departmentByEmployeeDto == null || departmentByEmployeeDto.DepartmentId == null) return ServiceResponse<bool>.Failure($"Requested DepartmentId: {employeeDto.DepartmentId} not exist"); ;
 
                 employee.EmployeeId = employeeDto.EmployeeId;
                 employee.EmployeeName = employeeDto.EmployeeName;
@@ -233,7 +265,9 @@ namespace Assignment2.Services
                 employee.DepartmentId = departmentByEmployeeDto.DepartmentId;
                 employee.Department = departmentByEmployeeDto;
 
-                return await _employeeRepository.UpdateEmployeeAsync(employee);
+                var isEmployeeUpdated =  await _employeeRepository.UpdateEmployeeAsync(employee);
+                var response = isEmployeeUpdated ? ServiceResponse<bool>.Success(true) : ServiceResponse<bool>.Failure($"Error updating EmployeeId: {employeeId}");
+                return response;
             }
             catch (ArgumentNullException ex)
             {

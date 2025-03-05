@@ -17,39 +17,38 @@ namespace Assignment2.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<ICollection<EmployeeDto>>> GetEmployeesByDepartment([FromRoute] string departmentId)
+        public async Task<ActionResult<ICollection<EmployeeDto>>> GetEmployeesByDepartmentAsync([FromRoute] string departmentId)
         {
-            var employeesByDepartmentId = await _employeeService.GetEmployeesByDepartmentIdAsync(departmentId);
-            if (employeesByDepartmentId == null) return NotFound();
-            return employeesByDepartmentId.Count() > 0 ? Ok(employeesByDepartmentId) : NotFound();
+            var employeesByDepartmentIdServiceResponse = await _employeeService.GetEmployeesByDepartmentIdAsync(departmentId);
+            return employeesByDepartmentIdServiceResponse.IsSuccess ? Ok(employeesByDepartmentIdServiceResponse.Data) : NotFound(employeesByDepartmentIdServiceResponse.Message);
         }
 
         [HttpGet("{employeeId}")]
         public async Task<ActionResult<EmployeeDto>> GetEmployeeByIdAsync([FromRoute] string departmentId, [FromRoute] string employeeId)
         {
-            var employeeById = await _employeeService.GetEmployeeByIdAsync(departmentId, employeeId);
-            return (employeeById == null || employeeById.EmployeeId == null) ? NotFound() : Ok(employeeById);
+            var employeeByIdServiceResponse = await _employeeService.GetEmployeeByIdAsync(departmentId, employeeId);
+            return (employeeByIdServiceResponse.IsSuccess) ? Ok(employeeByIdServiceResponse.Data) : NotFound(employeeByIdServiceResponse.Message);
         }
 
         [HttpPatch("{employeeId}")]
         public async Task<ActionResult<EmployeeDto>> UpdateEmployeeByIdAsync([FromRoute] string departmentId, [FromRoute] string employeeId, [FromBody] EmployeeDto employeeDto)
         {
-            var isEmployeeUpdated = await _employeeService.UpdateEmployeeAsync(departmentId, employeeId, employeeDto);
-            return isEmployeeUpdated ? Ok(employeeDto) : NotFound();
+            var isEmployeeUpdatedServiceResponse = await _employeeService.UpdateEmployeeAsync(departmentId, employeeId, employeeDto);
+            return isEmployeeUpdatedServiceResponse.IsSuccess ? Ok(employeeDto) : NotFound(isEmployeeUpdatedServiceResponse.Message);
         }
 
         [HttpPost]
         public async Task<ActionResult<EmployeeDto>> CreateNewEmployeeAsync([FromRoute] string departmentId, [FromBody] EmployeeDto employeeDto)
         {
-            var isEmployeeCreated = await _employeeService.CreateEmployeeAsync(departmentId, employeeDto);
-            return isEmployeeCreated ? Ok(employeeDto) : Conflict();
+            var isEmployeeCreatedServiceResponse = await _employeeService.CreateEmployeeAsync(departmentId, employeeDto);
+            return isEmployeeCreatedServiceResponse.IsSuccess ? Ok(employeeDto) : Conflict(isEmployeeCreatedServiceResponse.Message);
         }
 
         [HttpDelete("{employeeId}")]
         public async Task<IActionResult> DeleteEmployeeByIdAsync([FromRoute] string departmentId, [FromRoute] string employeeId)
         {
-            var isEmployeeDeleted = await _employeeService.DeleteEmployeeByIdAsync(departmentId, employeeId);
-            return isEmployeeDeleted ? Ok() : NotFound();
+            var isEmployeeDeletedServiceResponse = await _employeeService.DeleteEmployeeByIdAsync(departmentId, employeeId);
+            return isEmployeeDeletedServiceResponse.IsSuccess ? Ok() : NotFound(isEmployeeDeletedServiceResponse.Message);
         }
         
 

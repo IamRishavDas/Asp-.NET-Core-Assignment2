@@ -20,9 +20,8 @@ namespace Assignment2.Controllers
         [HttpGet]
         public async Task<ActionResult<ICollection<EmployeeDto>>> GetEmployeesAsync()
         {
-            var employees = await _employeeService.GetEmployeesAsync();
-            if (employees == null) return NotFound();
-            return employees.Count() > 0 ? Ok(employees) : NotFound();
+            var employeesServiceResponse = await _employeeService.GetEmployeesAsync();
+            return employeesServiceResponse.IsSuccess ? Ok(employeesServiceResponse.Data) : NotFound(employeesServiceResponse.Message);
         }
     }
 }

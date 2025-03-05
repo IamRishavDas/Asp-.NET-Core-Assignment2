@@ -1,4 +1,6 @@
-﻿using Assignment2.CustomExceptions;
+﻿using System.Runtime.Intrinsics.Arm;
+using Assignment2.CustomExceptions;
+using Assignment2.CustomResponses;
 using Assignment2.Dtos;
 using Assignment2.Models;
 using Assignment2.Repositories;
@@ -18,12 +20,18 @@ namespace Assignment2.Services
             _mapper = mapper;
         }
 
-        public async Task<bool> CreateDepartmentAsync(DepartmentDto departmentDto)
+        public async Task<ServiceResponse<bool>> CreateDepartmentAsync(DepartmentDto departmentDto)
         {
             try
             {
                 if (departmentDto == null) throw new ArgumentNullException("DepartmentDto is null!");
-                return await _departmentRepository.CreateDepartmentAsync(_mapper.Map<Department>(departmentDto));
+
+                if ((await IsDepartmentExistAsync(departmentDto.DepartmentId)).IsSuccess) return ServiceResponse<bool>.Failure($"DepartmentId: {departmentDto.DepartmentId} already exist");
+
+                var isDepartmentCreated = await _departmentRepository.CreateDepartmentAsync(_mapper.Map<Department>(departmentDto));
+
+                var response = isDepartmentCreated ? ServiceResponse<bool>.Success(true) : ServiceResponse<bool>.Failure($"Error Creating new Department");
+                return response;
             }
             catch(ArgumentNullException ex)
             {
@@ -47,12 +55,17 @@ namespace Assignment2.Services
             }
         }
 
-        public async Task<bool> DeleteDepartmentByIdAsync(string departmentId)
+        public async Task<ServiceResponse<bool>> DeleteDepartmentByIdAsync(string departmentId)
         {
             try
             {
                 if (departmentId == null) throw new ArgumentNullException($"DepartmentId is null!");
-                return await _departmentRepository.DeleteDepartmentByIdAsync(departmentId);
+
+                var isDepartmentExistServiceResponse = await IsDepartmentExistAsync(departmentId);
+                if (!isDepartmentExistServiceResponse.IsSuccess) return ServiceResponse<bool>.Failure($"DepartmentId: {departmentId} not exist");
+
+                var isDepartmentDeleted = await _departmentRepository.DeleteDepartmentByIdAsync(departmentId);
+                return isDepartmentDeleted ? ServiceResponse<bool>.Success(true) : ServiceResponse<bool>.Failure($"Error while deleting DepartmentId: {departmentId}");
             }
             catch (ArgumentNullException ex)
             {
@@ -76,12 +89,16 @@ namespace Assignment2.Services
             }
         }
 
-        public async Task<DepartmentDto> GetDepartmentByIdAsync(string departmentId)
+        public async Task<ServiceResponse<DepartmentDto>> GetDepartmentByIdAsync(string departmentId)
         {
             try
             {
                 if (departmentId == null) throw new ArgumentNullException("DepartmentId is null!");
-                return _mapper.Map<DepartmentDto>(await _departmentRepository.GetDepartmentByIdAsync(departmentId));
+
+                var departmentDto = _mapper.Map<DepartmentDto>(await _departmentRepository.GetDepartmentByIdAsync(departmentId));
+                if (departmentDto == null || departmentDto.DepartmentId == null) return ServiceResponse<DepartmentDto>.Failure($"DepartmentId: {departmentId} not exist");
+
+                return ServiceResponse<DepartmentDto>.Success(departmentDto);
             }
             catch (ArgumentNullException ex)
             {
@@ -105,11 +122,14 @@ namespace Assignment2.Services
             }
         }
 
-        public async Task<ICollection<DepartmentDto>> GetDepartmentsAsync()
+        public async Task<ServiceResponse<ICollection<DepartmentDto>>> GetDepartmentsAsync()
         {
             try
             {
-                return _mapper.Map<ICollection<DepartmentDto>>(await _departmentRepository.GetDepartmentsAsync());
+                var departmentList = _mapper.Map<ICollection<DepartmentDto>>(await _departmentRepository.GetDepartmentsAsync());
+                if (departmentList == null || departmentList.Count() == 0) return ServiceResponse<ICollection<DepartmentDto>>.Failure("No Department found");
+
+                return ServiceResponse<ICollection<DepartmentDto>>.Success(departmentList);
             }
             catch (OperationCanceledException ex)
             {
@@ -129,12 +149,13 @@ namespace Assignment2.Services
             }
         }
 
-        public async Task<bool> IsDepartmentExistAsync(string departmentId)
+        public async Task<ServiceResponse<bool>> IsDepartmentExistAsync(string departmentId)
         {
             try
             {
                 if (departmentId == null) throw new ArgumentNullException("DepartmentId is null!");
-                return await _departmentRepository.IsDepartmentExistAsync(departmentId);
+                var isDepartmentExist =  await _departmentRepository.IsDepartmentExistAsync(departmentId);
+                return isDepartmentExist ? ServiceResponse<bool>.Success(true) : ServiceResponse<bool>.Failure($"DepartmentId: {departmentId} Not Exist");
             }
             catch (ArgumentNullException ex)
             {
@@ -158,14 +179,18 @@ namespace Assignment2.Services
             }
         }
 
-        public async Task<bool> UpdateDepartmentAsync(string departmentId, DepartmentDto departmentDto)
+        public async Task<ServiceResponse<bool>> UpdateDepartmentAsync(string departmentId, DepartmentDto departmentDto)
         {
             try
             {
                 if (departmentId == null || departmentId == null) throw new ArgumentNullException("DepartmentId or DepartmentDto is null!");
 
-                if (!departmentId.Equals(departmentDto.DepartmentId)) return false;
-                return await _departmentRepository.UpdateDepartmentAsync(departmentId, _mapper.Map<Department>(departmentDto));
+                if (!departmentId.Equals(departmentDto.DepartmentId)) return ServiceResponse<bool>.Failure($"Path DepartmentId: {departmentId} not match Request body DepartmentId: {departmentDto.DepartmentId}");
+
+                if (!(await IsDepartmentExistAsync(departmentId)).IsSuccess) return ServiceResponse<bool>.Failure($"DepartmentId: {departmentId} not exist");
+
+                var isDepartmentUpdated = await _departmentRepository.UpdateDepartmentAsync(departmentId, _mapper.Map<Department>(departmentDto));
+                return isDepartmentUpdated ? ServiceResponse<bool>.Success(true) : ServiceResponse<bool>.Failure($"Error while updating DepartmentId: {departmentId}");
             }
             catch (ArgumentNullException ex)
             {

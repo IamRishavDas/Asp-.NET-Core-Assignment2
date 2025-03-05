@@ -18,38 +18,36 @@ namespace Assignment2.Controllers
         [HttpGet]
         public async Task<ActionResult<ICollection<DepartmentDto>>> GetAllDepartmentsAsync()
         {
-            var departments = await _departmentService.GetDepartmentsAsync();
-            if (departments == null) return NotFound();
-            return departments?.Count() > 0 ? Ok(departments) : NotFound();
-        }
+            var departmentsServiceResponse = await _departmentService.GetDepartmentsAsync();
+            return departmentsServiceResponse.IsSuccess ? Ok(departmentsServiceResponse.Data) : NotFound(departmentsServiceResponse.Message);
+        }   
 
         [HttpGet("{departmentId}")]
         public async Task<ActionResult<DepartmentDto>> GetDepartmentByIdAsync([FromRoute] string departmentId)
         {
-            var department = await _departmentService.GetDepartmentByIdAsync(departmentId);
-            if (department == null || department.DepartmentId == null) return NotFound();
-            return Ok(department);
+            var departmentServiceResponse = await _departmentService.GetDepartmentByIdAsync(departmentId);
+            return departmentServiceResponse.IsSuccess ? Ok(departmentServiceResponse.Data) : NotFound(departmentServiceResponse.Message);
         }
 
         [HttpPost]
         public async Task<ActionResult<DepartmentDto>> CreateDepartmentAsync([FromBody] DepartmentDto departmentDto)
         {
-            var isDepartmentCreated = await _departmentService.CreateDepartmentAsync(departmentDto);
-            return isDepartmentCreated ? Ok(departmentDto) : Conflict();
+            var isDepartmentCreatedServiceResponse = await _departmentService.CreateDepartmentAsync(departmentDto);
+            return isDepartmentCreatedServiceResponse.IsSuccess ? Ok(departmentDto) : Conflict(isDepartmentCreatedServiceResponse.Message);
         }
 
         [HttpPatch("{departmentId}")]
         public async Task<ActionResult<DepartmentDto>> UpdateDepartmentAsync([FromRoute] string departmentId, [FromBody] DepartmentDto departmentDto)
         {
-            var isDepartmentUpdated = await _departmentService.UpdateDepartmentAsync(departmentId, departmentDto);
-            return isDepartmentUpdated ? Ok(departmentDto) : NotFound();
+            var isDepartmentUpdatedServiceResponse = await _departmentService.UpdateDepartmentAsync(departmentId, departmentDto);
+            return isDepartmentUpdatedServiceResponse.IsSuccess ? Ok(departmentDto) : NotFound(isDepartmentUpdatedServiceResponse.Message);
         }
 
         [HttpDelete("{departmentId}")]
         public async Task<IActionResult> DeleteDepartmentById([FromRoute] string departmentId)
         {
-            var isDepartmentDeleted = await _departmentService.DeleteDepartmentByIdAsync(departmentId);
-            return isDepartmentDeleted ? Ok() : NotFound();
+            var isDepartmentDeletedServiceResponse = await _departmentService.DeleteDepartmentByIdAsync(departmentId);
+            return isDepartmentDeletedServiceResponse.IsSuccess ? Ok() : NotFound(isDepartmentDeletedServiceResponse.Message);
         }
     }
 }
