@@ -3,6 +3,7 @@ using Assignment2.Dtos;
 using Assignment2.Models;
 using Assignment2.Repositories;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 
 namespace Assignment2.Services
 {
@@ -21,16 +22,28 @@ namespace Assignment2.Services
         {
             try
             {
-                //Department department = new Department()
-                //{
-                //    DepartmentId = departmentDto.DepartmentId,
-                //    DepartmentName = departmentDto.DepartmentName
-                //};
+                if (departmentDto == null) throw new ArgumentNullException("DepartmentDto is null!");
                 return await _departmentRepository.CreateDepartmentAsync(_mapper.Map<Department>(departmentDto));
+            }
+            catch(ArgumentNullException ex)
+            {
+                throw new ServiceException($"Error while creating {departmentDto}, Exception: {ex.Message}", false, ex);
+            }
+            catch(OperationCanceledException ex)
+            {
+                throw new ServiceException($"Error while creating {departmentDto}, Exception: {ex.Message}", false, ex);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                throw new ServiceException($"Error while creating {departmentDto}, Exception: {ex.Message}", false, ex);
+            }
+            catch(DbUpdateException ex)
+            {
+                throw new ServiceException($"Error while creating {departmentDto}, Exception: {ex.Message}", false, ex);
             }
             catch (Exception ex)
             {
-                throw new ServiceException($"Error while creating {departmentDto}, Exception: {ex}", false, ex);
+                throw new ServiceException($"Error while creating {departmentDto}, Exception: {ex.Message}", false, ex);
             }
         }
 
@@ -38,11 +51,28 @@ namespace Assignment2.Services
         {
             try
             {
+                if (departmentId == null) throw new ArgumentNullException($"DepartmentId is null!");
                 return await _departmentRepository.DeleteDepartmentByIdAsync(departmentId);
+            }
+            catch (ArgumentNullException ex)
+            {
+                throw new ServiceException($"Error while Deleting DepartmentId: {departmentId}, Exception: {ex.Message}", false, ex);
+            }
+            catch (OperationCanceledException ex)
+            {
+                throw new ServiceException($"Error while Deleting DepartmentId: {departmentId}, Exception: {ex.Message}", false, ex);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                throw new ServiceException($"Error while Deleting DepartmentId: {departmentId}, Exception: {ex.Message}", false, ex);
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new ServiceException($"Error while Deleting DepartmentId:  {departmentId}, Exception: {ex.Message}", false, ex);
             }
             catch (Exception ex)
             {
-                throw new ServiceException($"Error while Deleting DepartmentId: {departmentId}, Exception: {ex}", false, ex);
+                throw new ServiceException($"Error while Deleting DepartmentId:  {departmentId}, Exception: {ex.Message}", false, ex);
             }
         }
 
@@ -50,11 +80,28 @@ namespace Assignment2.Services
         {
             try
             {
+                if (departmentId == null) throw new ArgumentNullException("DepartmentId is null!");
                 return _mapper.Map<DepartmentDto>(await _departmentRepository.GetDepartmentByIdAsync(departmentId));
+            }
+            catch (ArgumentNullException ex)
+            {
+                throw new ServiceException($"Error while fetching DepartmentId: {departmentId}, Exception: {ex.Message}", false, ex);
+            }
+            catch (OperationCanceledException ex)
+            {
+                throw new ServiceException($"Error while fetching DepartmentId: {departmentId}, Exception: {ex.Message}", false, ex);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                throw new ServiceException($"Error while fetching DepartmentId: {departmentId}, Exception: {ex.Message}", false, ex);
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new ServiceException($"Error while fetching DepartmentId: {departmentId}, Exception: {ex.Message}", false, ex);
             }
             catch (Exception ex)
             {
-                throw new ServiceException($"Error while fetching DepartmentId: {departmentId}, Exception: {ex}", false, ex);
+                throw new ServiceException($"Error while fetching DepartmentId: {departmentId}, Exception: {ex.Message}", false, ex);
             }
         }
 
@@ -64,9 +111,21 @@ namespace Assignment2.Services
             {
                 return _mapper.Map<ICollection<DepartmentDto>>(await _departmentRepository.GetDepartmentsAsync());
             }
+            catch (OperationCanceledException ex)
+            {
+                throw new ServiceException($"Error while fetching the Departments, Exception: {ex.Message}", false, ex);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                throw new ServiceException($"Error while fetching the Departments, Exception: {ex.Message}", false, ex);
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new ServiceException($"Error while fetching the Departments, Exception: {ex.Message}", false, ex);
+            }
             catch (Exception ex)
             {
-                throw new ServiceException($"Error while fetching the Departments, Exception: {ex}", false, ex);
+                throw new ServiceException($"Error while fetching the Departments, Exception: {ex.Message}", false, ex);
             }
         }
 
@@ -74,11 +133,28 @@ namespace Assignment2.Services
         {
             try
             {
+                if (departmentId == null) throw new ArgumentNullException("DepartmentId is null!");
                 return await _departmentRepository.IsDepartmentExistAsync(departmentId);
+            }
+            catch (ArgumentNullException ex)
+            {
+                throw new ServiceException($"Error while fetching the Department from Database for DepartmentId: {departmentId}, Exception: {ex.Message}", false, ex);
+            }
+            catch (OperationCanceledException ex)
+            {
+                throw new ServiceException($"Error while fetching the Department from Database for DepartmentId: {departmentId}, Exception: {ex.Message}", false, ex);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                throw new ServiceException($"Error while fetching the Department from Database for DepartmentId: {departmentId}, Exception: {ex.Message}", false, ex);
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new ServiceException($"Error while fetching the Department from Database for DepartmentId: {departmentId}, Exception: {ex.Message}", false, ex);
             }
             catch (Exception ex)
             {
-                throw new ServiceException($"Error while fetching the Department from Database for DepartmentId: {departmentId}", false, ex);
+                throw new ServiceException($"Error while fetching the Department from Database for DepartmentId: {departmentId}, Exception: {ex.Message}", false, ex);
             }
         }
 
@@ -86,12 +162,30 @@ namespace Assignment2.Services
         {
             try
             {
+                if (departmentId == null || departmentId == null) throw new ArgumentNullException("DepartmentId or DepartmentDto is null!");
+
                 if (!departmentId.Equals(departmentDto.DepartmentId)) return false;
                 return await _departmentRepository.UpdateDepartmentAsync(departmentId, _mapper.Map<Department>(departmentDto));
             }
+            catch (ArgumentNullException ex)
+            {
+                throw new ServiceException($"Error while updating {departmentDto}, Exception: {ex.Message}", false, ex);
+            }
+            catch (OperationCanceledException ex)
+            {
+                throw new ServiceException($"Error while updating {departmentDto}, Exception: {ex.Message}", false, ex);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                throw new ServiceException($"Error while updating {departmentDto}, Exception: {ex.Message}", false, ex);
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new ServiceException($"Error while updating {departmentDto}, Exception: {ex.Message}", false, ex);
+            }
             catch (Exception ex)
             {
-                throw new ServiceException($"Error while updating {departmentDto}, Exception: {ex}", false, ex);
+                throw new ServiceException($"Error while updating {departmentDto}, Exception: {ex.Message}", false, ex);
             }
         }
     }
