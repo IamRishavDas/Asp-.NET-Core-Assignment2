@@ -17,7 +17,7 @@ namespace Assignment2.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<ICollection<EmployeeDto>>> GetEmployeesByDepartment([FromRoute] string departmentId)
+        public async Task<ActionResult<ICollection<EmployeeDto>>> GetEmployeesByDepartmentAsync([FromRoute] string departmentId)
         {
             var employeesByDepartmentId = await _employeeService.GetEmployeesByDepartmentIdAsync(departmentId);
             if (employeesByDepartmentId == null) return NotFound();
