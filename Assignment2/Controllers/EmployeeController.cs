@@ -34,6 +34,7 @@ namespace Assignment2.Controllers
         [HttpPut("{employeeId}")]
         public async Task<ActionResult<EmployeeDto>> UpdateEmployeeByIdAsync([FromRoute] string departmentId, [FromRoute] string employeeId, [FromBody] EmployeeDto employeeDto)
         {
+            if (!ModelState.IsValid) return BadRequest();
             var isEmployeeUpdated = await _employeeService.UpdateEmployeeAsync(departmentId, employeeId, employeeDto);
             return isEmployeeUpdated ? Ok(employeeDto) : NotFound();
         }
@@ -41,6 +42,7 @@ namespace Assignment2.Controllers
         [HttpPost]
         public async Task<ActionResult<EmployeeDto>> CreateNewEmployeeAsync([FromRoute] string departmentId, [FromBody] EmployeeDto employeeDto)
         {
+            if (!ModelState.IsValid) return BadRequest();
             var isEmployeeCreated = await _employeeService.CreateEmployeeAsync(departmentId, employeeDto);
             return isEmployeeCreated ? Ok(employeeDto) : Conflict();
         }

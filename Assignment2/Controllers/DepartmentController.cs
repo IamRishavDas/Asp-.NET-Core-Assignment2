@@ -34,6 +34,7 @@ namespace Assignment2.Controllers
         [HttpPost]
         public async Task<ActionResult<DepartmentDto>> CreateDepartmentAsync([FromBody] DepartmentDto departmentDto)
         {
+            if (!ModelState.IsValid) return BadRequest();
             var isDepartmentCreated = await _departmentService.CreateDepartmentAsync(departmentDto);
             return isDepartmentCreated ? Ok(departmentDto) : Conflict();
         }
@@ -41,6 +42,7 @@ namespace Assignment2.Controllers
         [HttpPut("{departmentId}")]
         public async Task<ActionResult<DepartmentDto>> UpdateDepartmentAsync([FromRoute] string departmentId, [FromBody] DepartmentDto departmentDto)
         {
+            if (!ModelState.IsValid) return BadRequest();
             var isDepartmentUpdated = await _departmentService.UpdateDepartmentAsync(departmentId, departmentDto);
             return isDepartmentUpdated ? Ok(departmentDto) : NotFound();
         }
