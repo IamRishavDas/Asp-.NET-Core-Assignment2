@@ -25,6 +25,7 @@ namespace Assignment2.Controllers
         [HttpGet("{departmentId}")]
         public async Task<ActionResult<DepartmentDto>> GetDepartmentByIdAsync([FromRoute] string departmentId)
         {
+            if (!ModelState.IsValid) return BadRequest();
             var departmentServiceResponse = await _departmentService.GetDepartmentByIdAsync(departmentId);
             return departmentServiceResponse.IsSuccess ? Ok(departmentServiceResponse.Data) : NotFound(departmentServiceResponse.Message);
         }
@@ -48,6 +49,7 @@ namespace Assignment2.Controllers
         [HttpDelete("{departmentId}")]
         public async Task<IActionResult> DeleteDepartmentById([FromRoute] string departmentId)
         {
+            if (!ModelState.IsValid) return BadRequest();
             var isDepartmentDeletedServiceResponse = await _departmentService.DeleteDepartmentByIdAsync(departmentId);
             return isDepartmentDeletedServiceResponse.IsSuccess ? Ok() : NotFound(isDepartmentDeletedServiceResponse.Message);
         }
