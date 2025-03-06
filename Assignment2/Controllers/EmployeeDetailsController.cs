@@ -20,6 +20,7 @@ namespace Assignment2.Controllers
         [HttpGet]
         public async Task<ActionResult<ICollection<EmployeeDto>>> GetEmployeesAsync()
         {
+            if (!ModelState.IsValid) return BadRequest();
             var employeesServiceResponse = await _employeeService.GetEmployeesAsync();
             return employeesServiceResponse.IsSuccess ? Ok(employeesServiceResponse.Data) : NotFound(employeesServiceResponse.Message);
         }

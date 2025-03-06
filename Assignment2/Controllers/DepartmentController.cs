@@ -18,6 +18,7 @@ namespace Assignment2.Controllers
         [HttpGet]
         public async Task<ActionResult<ICollection<DepartmentDto>>> GetAllDepartmentsAsync()
         {
+            if (!ModelState.IsValid) return BadRequest();
             var departmentsServiceResponse = await _departmentService.GetDepartmentsAsync();
             return departmentsServiceResponse.IsSuccess ? Ok(departmentsServiceResponse.Data) : NotFound(departmentsServiceResponse.Message);
         }   
@@ -25,6 +26,7 @@ namespace Assignment2.Controllers
         [HttpGet("{departmentId}")]
         public async Task<ActionResult<DepartmentDto>> GetDepartmentByIdAsync([FromRoute] string departmentId)
         {
+            if (!ModelState.IsValid) return BadRequest();
             var departmentServiceResponse = await _departmentService.GetDepartmentByIdAsync(departmentId);
             return departmentServiceResponse.IsSuccess ? Ok(departmentServiceResponse.Data) : NotFound(departmentServiceResponse.Message);
         }
@@ -32,6 +34,7 @@ namespace Assignment2.Controllers
         [HttpPost]
         public async Task<ActionResult<DepartmentDto>> CreateDepartmentAsync([FromBody] DepartmentDto departmentDto)
         {
+            if (!ModelState.IsValid) return BadRequest();
             var isDepartmentCreatedServiceResponse = await _departmentService.CreateDepartmentAsync(departmentDto);
             return isDepartmentCreatedServiceResponse.IsSuccess ? Ok(departmentDto) : Conflict(isDepartmentCreatedServiceResponse.Message);
         }
@@ -39,6 +42,7 @@ namespace Assignment2.Controllers
         [HttpPut("{departmentId}")]
         public async Task<ActionResult<DepartmentDto>> UpdateDepartmentAsync([FromRoute] string departmentId, [FromBody] DepartmentDto departmentDto)
         {
+            if (!ModelState.IsValid) return BadRequest();
             var isDepartmentUpdatedServiceResponse = await _departmentService.UpdateDepartmentAsync(departmentId, departmentDto);
             return isDepartmentUpdatedServiceResponse.IsSuccess ? Ok(departmentDto) : NotFound(isDepartmentUpdatedServiceResponse.Message);
         }
@@ -46,6 +50,7 @@ namespace Assignment2.Controllers
         [HttpDelete("{departmentId}")]
         public async Task<IActionResult> DeleteDepartmentById([FromRoute] string departmentId)
         {
+            if (!ModelState.IsValid) return BadRequest();
             var isDepartmentDeletedServiceResponse = await _departmentService.DeleteDepartmentByIdAsync(departmentId);
             return isDepartmentDeletedServiceResponse.IsSuccess ? Ok() : NotFound(isDepartmentDeletedServiceResponse.Message);
         }
