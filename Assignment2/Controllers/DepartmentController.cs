@@ -36,7 +36,7 @@ namespace Assignment2.Controllers
             return isDepartmentCreatedServiceResponse.IsSuccess ? Ok(departmentDto) : Conflict(isDepartmentCreatedServiceResponse.Message);
         }
 
-        [HttpPatch("{departmentId}")]
+        [HttpPut("{departmentId}")]
         public async Task<ActionResult<DepartmentDto>> UpdateDepartmentAsync([FromRoute] string departmentId, [FromBody] DepartmentDto departmentDto)
         {
             var isDepartmentUpdatedServiceResponse = await _departmentService.UpdateDepartmentAsync(departmentId, departmentDto);

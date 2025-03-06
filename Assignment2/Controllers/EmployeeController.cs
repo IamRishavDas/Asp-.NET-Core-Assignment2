@@ -30,7 +30,7 @@ namespace Assignment2.Controllers
             return (employeeByIdServiceResponse.IsSuccess) ? Ok(employeeByIdServiceResponse.Data) : NotFound(employeeByIdServiceResponse.Message);
         }
 
-        [HttpPatch("{employeeId}")]
+        [HttpPut("{employeeId}")]
         public async Task<ActionResult<EmployeeDto>> UpdateEmployeeByIdAsync([FromRoute] string departmentId, [FromRoute] string employeeId, [FromBody] EmployeeDto employeeDto)
         {
             var isEmployeeUpdatedServiceResponse = await _employeeService.UpdateEmployeeAsync(departmentId, employeeId, employeeDto);
