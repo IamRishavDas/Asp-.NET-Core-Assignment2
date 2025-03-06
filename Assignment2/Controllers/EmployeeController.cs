@@ -31,7 +31,7 @@ namespace Assignment2.Controllers
             return (employeeById == null || employeeById.EmployeeId == null) ? NotFound() : Ok(employeeById);
         }
 
-        [HttpPatch("{employeeId}")]
+        [HttpPut("{employeeId}")]
         public async Task<ActionResult<EmployeeDto>> UpdateEmployeeByIdAsync([FromRoute] string departmentId, [FromRoute] string employeeId, [FromBody] EmployeeDto employeeDto)
         {
             var isEmployeeUpdated = await _employeeService.UpdateEmployeeAsync(departmentId, employeeId, employeeDto);

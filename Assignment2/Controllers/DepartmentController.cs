@@ -38,7 +38,7 @@ namespace Assignment2.Controllers
             return isDepartmentCreated ? Ok(departmentDto) : Conflict();
         }
 
-        [HttpPatch("{departmentId}")]
+        [HttpPut("{departmentId}")]
         public async Task<ActionResult<DepartmentDto>> UpdateDepartmentAsync([FromRoute] string departmentId, [FromBody] DepartmentDto departmentDto)
         {
             var isDepartmentUpdated = await _departmentService.UpdateDepartmentAsync(departmentId, departmentDto);
